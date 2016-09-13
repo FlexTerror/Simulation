@@ -66,7 +66,7 @@ public class Simulation extends JPanel {
     void updateWorld() {
         if (toggle) {// TODO Get all unsatisfied
             for (int i = 0; i < world.length; i++) {
-                for (int j = 0; i < world.length; i++) {
+                for (int j = 0; j < world.length; j++) {
                     if (IsUn(i, j)) {
                         state[i][j] = State.UNSATISFIED;
                     }
@@ -86,38 +86,80 @@ public class Simulation extends JPanel {
 
     // ------- Write your method below this ---------------
     boolean IsUn(int i, int j){
-        same colour
-        if (i == 0 && j == 0) {     //top left
+        int same = 0;
+        int nsame = 8;
+        if (i != 0 && j != 0) {//not bot left
+            if(world[i-1][j-1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
 
-        }
-        else if (i == 0 && j == world.length) {//top right
+        if (i != 0 && j != world.length-1) {//not top left
+            if(world[i-1][j+1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (i != world.length-1 && j != world.length-1) {//not top right
+            if(world[i+1][j+1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (i != world.length-1 && j != 0) {//not bottom right
+            if(world[i+1][j-1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (i != 0) {//not left
+            if(world[i-1][j] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (j != world.length-1) {//not top
+            if(world[i][j+1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (i != world.length-1) {//not right
+            if(world[i+1][j] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
+        if (j != 0) {//not bottom
+            if(world[i][j-1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+        }else{nsame--;}
 
+        if(threshold < same/nsame) {
+            return true;
         }
-        else if (i == world.length && j == world.length) {//bottom right
-
+        else{
+            return false;
         }
-        else if (i == world.length && j == 0) {//bottom left
-
-        }
-        else if (j == world.length) {//top
-
-        }
-        else if (i == world.length) {//right
-
-        }
-        else if (j == 0) {//bottom
-
-        }
-        else if (i == 0) {//left
-
-        }
-        else {                      //normal
-
-        }
-      return true;
     }
 
+/*             if(world[i][j+1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+            if(world[i+1][j+1] == world[i][j]){
+                same++;
+                nsame--;
+            }
+            if(world[i+1][j] == world[i][j]){
+                same++;
+                nsame--;
+            }
 
+          */
 
     // --------- NOTHING to do below this --------------------------
     // --- Utility methods ----------------------------
