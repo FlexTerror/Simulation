@@ -1,4 +1,4 @@
-package assignments.product;
+package assignments.product.Simulation;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,14 +66,27 @@ public class Simulation extends JPanel {
     void updateWorld() {
         if (toggle) {// TODO Get all unsatisfied
             for (int i = 0; i < world.length; i++) {
-                for (int j = 0; i < world.length; i++) {
+                for (int j = 0; j < world.length; j++) {
                     if (IsUn(i, j)) {
                         state[i][j] = State.UNSATISFIED;
                     }
                 }
             }
         } else {// TODO Move all unsatisfied
+            //Turn world into an array
+            Actor[] worldArr = toArray(world);
+            State[] stateArr = toArray(state);
 
+            int[] unsatisfiedIndex;
+            for (int i = 0; i < worldArr.length; i++){
+                if (state[i] == State.UNSATISFIED){
+                    //Put all unsatisfied in a list
+                    unsatisfiedIndex = addTo(unsatisfiedIndex, i);
+                    //Scramble unsatisfied
+                    shuffle(unsatisfiedIndex);
+
+                }
+            }
         }
         toggle = !toggle;
     }
@@ -85,8 +98,26 @@ public class Simulation extends JPanel {
     }
 
     // ------- Write your method below this ---------------
+    <T>T[] toArray(T[][] matrix){
+        T[] array;
+
+        for (int i = 0; i < matrix.length; i++){
+            for (int j = 0; j < matrix[0].length; j++){
+
+            }
+        }
+
+        return array;
+    }
+    <T> T[] addTo(T[] array, T value){
+        T[] newArray;
+        newArray = new T[2];
+
+        return newArray;
+    }
+
     boolean IsUn(int i, int j){
-        same colour
+        //same colour
         if (i == 0 && j == 0) {     //top left
 
         }
