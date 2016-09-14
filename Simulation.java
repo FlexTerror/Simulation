@@ -24,7 +24,7 @@ public class Simulation extends JPanel {
 
     // Enumeration (reference) type for the Actors
     enum Actor {
-        BLUE, NONE, RED
+        NONE, BLUE, RED
     }
 
     // Enumeration (reference) type for the state of an Actor
@@ -38,24 +38,20 @@ public class Simulation extends JPanel {
     final Random rand = new Random();
     // %-distribution of RED, BLUE and NONE
     // Result (terminating?) is very depending on % empty and threshold, experiment!
-    final double[] distribution = {0.25, 0.25, 0.50};
+    final double[] distribution = {0.25, 0.25}; //First is red, second blue
     // % of surrounding neighbours that are like me
+    final int rows = 25;
     final double threshold = 0.5; // 0.5 easier for testing;
     //  This is hard coded for testing purposes (later you should generate the world)
-    Actor[][] world = {
-            {Actor.RED, Actor.RED, Actor.NONE},
-            {Actor.BLUE, Actor.RED, Actor.NONE},  // Middle BLUE is dissatisfied (threshold = 0.5)
-            {Actor.RED, Actor.NONE, Actor.BLUE}    // Left RED are dissatisfied (threshold = 0.5)
-    };
+    Actor[][] world;
     boolean toggle = true;  // Used in updateWorld
-    State[][] state = new State[world.length][world.length]; // Matrix for the state of all Actors
+    State[][] state = new State[rows][rows]; // Matrix for the state of all Actors
 
     void program() {
         // Testing with *** threshold = 0.5;****
-        plot(world);
-
-
         // Initialize the world here
+        world = initData(distribution, rows);
+        plot(world);
 
 
         initGraphics();
@@ -64,7 +60,7 @@ public class Simulation extends JPanel {
 
     // Method called by timer
     void updateWorld() {
-        if (toggle) {// TODO Get all unsatisfied
+        if (toggle) {
             for (int i = 0; i < world.length; i++) {
                 for (int j = 0; j < world.length; j++) {
                     if (world[i][j] == Actor.NONE){
@@ -77,24 +73,23 @@ public class Simulation extends JPanel {
                     }
                 }
             }
-        } else {// TODO Move all unsatisfied
+        } else {
             //Turn world and state into array
             int matrixWidth = world.length;
             Actor[] worldArr = new Actor[matrixWidth * matrixWidth];
             toArray(world, worldArr);
-            matrixWidth = state.length;
             State[] stateArr = new State[matrixWidth * matrixWidth];
             toArray(state, stateArr);
 
-            //Make an array of the right size, Arraylist?
+            //Make an array of the right size for all empty, Arraylist?
             int emptyAmn = 0;
             for (int i = 0; i < worldArr.length; i++) {
                 if (stateArr[i] == State.NA) {
                     emptyAmn++;
                 }
             }
-            //Put all empty in a list
             Integer[] emptyIndex = new Integer[emptyAmn];
+            //Put all empty in the array created above
             int j = 0;
             for (int i = 0; i < worldArr.length; i++) {
                 if (stateArr[i] == State.NA) {
@@ -107,6 +102,7 @@ public class Simulation extends JPanel {
             shuffle(emptyIndex);
             out.println("Empty tiles: " + Arrays.toString(emptyIndex));
 
+            //TODO After move add old tile to empty list
             //Move unsatisifed to empty tile
             int i = 0;
             for (int z = 0; z < stateArr.length; z++){
@@ -130,9 +126,34 @@ public class Simulation extends JPanel {
     }
 
     // Generate Actors for the world, nElements should be a square
-    Actor[] initData(double[] distribution, int nElements) {
-        // TODO
-        return null;
+    Actor[][] initData(double[] distribution, int nRows) {
+        int nElements = nRows * nRows;
+        int red = (int)(distribution[0] * nElements);
+        int blue = (int)(distribution[1] * nElements);
+        int none = nElements - red - blue;
+
+        Actor[] newWorld = new Actor[nElements];
+
+        for (int i = 0; i < newWorld.length; i++){
+            newWorld[i] = Actor.NONE;
+        }
+        while (red > 0){
+            int i = rand.nextInt(nElements);
+            out.println(newWorld[i] == Actor.NONE);
+            if (newWorld[i] == Actor.NONE){
+                newWorld[i] = Actor.RED;
+            }
+            red--;
+        }
+        while (blue > 0){
+            int i = rand.nextInt(nElements);
+            if (newWorld[i] == Actor.NONE){
+                newWorld[i] = Actor.BLUE;
+            }
+            blue--;
+        }
+        Actor[][] newWorldMatrix = toMatrix(newWorld);
+        return newWorldMatrix;
     }
 
     // ------- Write your method below this ---------------
@@ -222,7 +243,7 @@ public class Simulation extends JPanel {
             return false;
         }
     }
-    
+
     // --------- NOTHING to do below this --------------------------
     // --- Utility methods ----------------------------
     Actor[][] toMatrix(Actor[] arr) {
