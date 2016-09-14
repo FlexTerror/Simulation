@@ -1,4 +1,4 @@
-package assignments.product.Simulation;
+package assignments.product;
 
 import javax.swing.*;
 import java.awt.*;
@@ -43,9 +43,10 @@ public class Simulation extends JPanel {
     final double threshold = 0.5; // 0.5 easier for testing;
     //  This is hard coded for testing purposes (later you should generate the world)
     Actor[][] world = {
-            {Actor.RED, Actor.RED, Actor.NONE},
-            {Actor.BLUE, Actor.RED, Actor.NONE},  // Middle BLUE is dissatisfied (threshold = 0.5)
-            {Actor.RED, Actor.NONE, Actor.BLUE}    // Left RED are dissatisfied (threshold = 0.5)
+            {Actor.RED, Actor.BLUE, Actor.NONE, Actor.BLUE},
+            {Actor.BLUE, Actor.RED, Actor.NONE, Actor.BLUE},  // Middle BLUE is dissatisfied (threshold = 0.5)
+            {Actor.RED, Actor.NONE, Actor.BLUE, Actor.RED},    // Left RED are dissatisfied (threshold = 0.5)
+            {Actor.RED, Actor.NONE, Actor.BLUE, Actor.BLUE}   // Left RED are dissatisfied (threshold = 0.5)
     };
     boolean toggle = true;  // Used in updateWorld
     State[][] state = new State[world.length][world.length]; // Matrix for the state of all Actors
@@ -149,79 +150,61 @@ public class Simulation extends JPanel {
 
     boolean IsUn(int i, int j) {
         int same = 0;
-        int nsame = 8;
+        int nsame = 0;
         if (i != 0 && j != 0) {//not bot left
-            if (world[i - 1][j - 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j-1] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j-1] != Actor.NONE){
+                nsame++;}}
 
         if (i != 0 && j != world.length - 1) {//not top left
-            if (world[i - 1][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1 && j != world.length - 1) {//not top right
-            if (world[i + 1][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1 && j != 0) {//not bottom right
-            if (world[i + 1][j - 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j-1] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j-1] != Actor.NONE){
+                nsame++;}}
+
         if (i != 0) {//not left
-            if (world[i - 1][j] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j] != Actor.NONE){
+                nsame++;}}
+
         if (j != world.length - 1) {//not top
-            if (world[i][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1) {//not right
-            if (world[i + 1][j] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j] != Actor.NONE){
+                nsame++;}}
+
         if (j != 0) {//not bottom
             if (world[i][j - 1] == world[i][j]) {
                 same++;
-                nsame--;
+            } else if (world[i][j - 1] != Actor.NONE) {
+                nsame++;}}
+            double sum = (same+0.0)/(0.0+nsame+same);
+            if ((nsame+same) != 0 && threshold <= sum) {
+                return false;
+            } else {
+                return true;
             }
-        } else {
-            nsame--;
         }
-
-        if (threshold < same / nsame) {
-            return true;
-        } else {
-            return false;
-        }
-    }
     
     // --------- NOTHING to do below this --------------------------
     // --- Utility methods ----------------------------
@@ -255,7 +238,7 @@ public class Simulation extends JPanel {
 
     final int width = 400;
     final int height = 400;
-    final int delay = 200;
+    final int delay = 2000;
 
     public void paint(Graphics g) {
         super.paint(g);
