@@ -61,68 +61,77 @@ public class Simulation extends JPanel {
     // Method called by timer
     void updateWorld() {
         if (toggle) {
-            for (int i = 0; i < world.length; i++) {
-                for (int j = 0; j < world.length; j++) {
-                    if (world[i][j] == Actor.NONE){
-                        state[i][j] = State.NA;
-                    }
-                    else if (IsUn(i, j)) {
-                        state[i][j] = State.UNSATISFIED;
-                    } else {
-                        state[i][j] = State.SATISFIED;
-                    }
-                }
-            }
+            setStates();
         } else {
-            //Turn world and state into array
-            int matrixWidth = world.length;
-            Actor[] worldArr = new Actor[matrixWidth * matrixWidth];
-            toArray(world, worldArr);
-            State[] stateArr = new State[matrixWidth * matrixWidth];
-            toArray(state, stateArr);
-
-            //Make an array of the right size for all empty, Arraylist?
-            int emptyAmn = 0;
-            for (int i = 0; i < worldArr.length; i++) {
-                if (stateArr[i] == State.NA) {
-                    emptyAmn++;
-                }
-            }
-            Integer[] emptyIndex = new Integer[emptyAmn];
-            //Put all empty in the array created above
-            int j = 0;
-            for (int i = 0; i < worldArr.length; i++) {
-                if (stateArr[i] == State.NA) {
-                    emptyIndex[j] = i;
-                    j++;
-                }
-            }
-
-            //Scramble empty
-            shuffle(emptyIndex);
-            out.println("Empty tiles: " + Arrays.toString(emptyIndex));
-
-            //TODO After move add old tile to empty list
-            //Move unsatisifed to empty tile
-            int i = 0;
-            for (int z = 0; z < stateArr.length; z++){
-                if (stateArr[z] == State.UNSATISFIED){
-                    worldArr[emptyIndex[i]] = worldArr[z];
-                    worldArr[z] = Actor.NONE;
-                    i++;
-                    if (i >= emptyIndex.length){
-                        break;
-                    }
-                }
-            }
-
-            world = toMatrix(worldArr);
-
-            plot(world);
-            plot(state);
-
+            move();
         }
         toggle = !toggle;
+    }
+
+    void move() {
+        //Turn world and state into array
+        int matrixWidth = world.length;
+        Actor[] worldArr = new Actor[matrixWidth * matrixWidth];
+        toArray(world, worldArr);
+        State[] stateArr = new State[matrixWidth * matrixWidth];
+        toArray(state, stateArr);
+
+        Integer[] emptyIndex = makeArrayOfEmptyIndex(worldArr, stateArr);
+
+        //Scramble empty
+        shuffle(emptyIndex);
+        moveUnsatisfied(worldArr, stateArr, emptyIndex);
+
+        world = toMatrix(worldArr);
+    }
+
+    Integer[] makeArrayOfEmptyIndex(Actor[] worldArr, State[] stateArr) {
+        //Make an array of the right size for all empty, Arraylist?
+        int emptyAmn = 0;
+        for (int i = 0; i < worldArr.length; i++) {
+            if (stateArr[i] == State.NA) {
+                emptyAmn++;
+            }
+        }
+        Integer[] emptyIndex = new Integer[emptyAmn];
+        //Put all empty in the array created above
+        int j = 0;
+        for (int i = 0; i < worldArr.length; i++) {
+            if (stateArr[i] == State.NA) {
+                emptyIndex[j] = i;
+                j++;
+            }
+        }
+        return emptyIndex;
+    }
+
+    void moveUnsatisfied(Actor[] worldArr, State[] stateArr, Integer[] emptyIndex) {
+        int i = 0;
+        for (int z = 0; z < stateArr.length; z++){
+            if (stateArr[z] == State.UNSATISFIED){
+                worldArr[emptyIndex[i]] = worldArr[z];
+                worldArr[z] = Actor.NONE;
+                i++;
+                if (i >= emptyIndex.length){
+                    break;
+                }
+            }
+        }
+    }
+
+    void setStates() {
+        for (int i = 0; i < world.length; i++) {
+            for (int j = 0; j < world.length; j++) {
+                if (world[i][j] == Actor.NONE){
+                    state[i][j] = State.NA;
+                }
+                else if (IsUn(i, j)) {
+                    state[i][j] = State.UNSATISFIED;
+                } else {
+                    state[i][j] = State.SATISFIED;
+                }
+            }
+        }
     }
 
     // Generate Actors for the world, nElements should be a square
@@ -130,30 +139,27 @@ public class Simulation extends JPanel {
         int nElements = nRows * nRows;
         int red = (int)(distribution[0] * nElements);
         int blue = (int)(distribution[1] * nElements);
-        int none = nElements - red - blue;
 
         Actor[] newWorld = new Actor[nElements];
 
         for (int i = 0; i < newWorld.length; i++){
             newWorld[i] = Actor.NONE;
         }
-        while (red > 0){
-            int i = rand.nextInt(nElements);
-            out.println(newWorld[i] == Actor.NONE);
-            if (newWorld[i] == Actor.NONE){
-                newWorld[i] = Actor.RED;
-            }
-            red--;
-        }
-        while (blue > 0){
-            int i = rand.nextInt(nElements);
-            if (newWorld[i] == Actor.NONE){
-                newWorld[i] = Actor.BLUE;
-            }
-            blue--;
-        }
+        placeActor(nElements, red, newWorld, Actor.RED);
+        placeActor(nElements, blue, newWorld, Actor.BLUE);
         Actor[][] newWorldMatrix = toMatrix(newWorld);
+
         return newWorldMatrix;
+    }
+
+    void placeActor(int nElements, int amount, Actor[] newWorld, Actor actor) {
+        while (amount > 0){
+            int i = rand.nextInt(nElements);
+            if (newWorld[i] == Actor.NONE){
+                newWorld[i] = actor;
+            }
+            amount--;
+        }
     }
 
     // ------- Write your method below this ---------------
