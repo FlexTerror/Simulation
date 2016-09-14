@@ -44,11 +44,11 @@ public class Simulation extends JPanel {
     //  This is hard coded for testing purposes (later you should generate the world)
     Actor[][] world = {
             {Actor.RED, Actor.RED, Actor.NONE},
-            {Actor.NONE, Actor.BLUE, Actor.NONE},  // Middle BLUE is dissatisfied (threshold = 0.5)
+            {Actor.BLUE, Actor.RED, Actor.NONE},  // Middle BLUE is dissatisfied (threshold = 0.5)
             {Actor.RED, Actor.NONE, Actor.BLUE}    // Left RED are dissatisfied (threshold = 0.5)
     };
     boolean toggle = true;  // Used in updateWorld
-    State[][] state;   // Matrix for the state of all Actors
+    State[][] state = new State[world.length][world.length]; // Matrix for the state of all Actors
 
     void program() {
         // Testing with *** threshold = 0.5;****
@@ -67,26 +67,64 @@ public class Simulation extends JPanel {
         if (toggle) {// TODO Get all unsatisfied
             for (int i = 0; i < world.length; i++) {
                 for (int j = 0; j < world.length; j++) {
-                    if (IsUn(i, j)) {
+                    if (world[i][j] == Actor.NONE){
+                        state[i][j] = State.NA;
+                    }
+                    else if (IsUn(i, j)) {
                         state[i][j] = State.UNSATISFIED;
+                    } else {
+                        state[i][j] = State.SATISFIED;
                     }
                 }
             }
         } else {// TODO Move all unsatisfied
-            //Turn world into an array
-            Actor[] worldArr = toArray(world);
-            State[] stateArr = toArray(state);
+            //Turn world and state into array
+            int matrixWidth = world.length;
+            Actor[] worldArr = new Actor[matrixWidth * matrixWidth];
+            toArray(world, worldArr);
+            matrixWidth = state.length;
+            State[] stateArr = new State[matrixWidth * matrixWidth];
+            toArray(state, stateArr);
 
-            int[] unsatisfiedIndex;
-            for (int i = 0; i < worldArr.length; i++){
-                if (state[i] == State.UNSATISFIED){
-                    //Put all unsatisfied in a list
-                    unsatisfiedIndex = addTo(unsatisfiedIndex, i);
-                    //Scramble unsatisfied
-                    shuffle(unsatisfiedIndex);
-
+            //Make an array of the right size, Arraylist?
+            int emptyAmn = 0;
+            for (int i = 0; i < worldArr.length; i++) {
+                if (stateArr[i] == State.NA) {
+                    emptyAmn++;
                 }
             }
+            //Put all empty in a list
+            Integer[] emptyIndex = new Integer[emptyAmn];
+            int j = 0;
+            for (int i = 0; i < worldArr.length; i++) {
+                if (stateArr[i] == State.NA) {
+                    emptyIndex[j] = i;
+                    j++;
+                }
+            }
+
+            //Scramble empty
+            shuffle(emptyIndex);
+            out.println("Empty tiles: " + Arrays.toString(emptyIndex));
+
+            //Move unsatisifed to empty tile
+            int i = 0;
+            for (int z = 0; z < stateArr.length; z++){
+                if (stateArr[z] == State.UNSATISFIED){
+                    worldArr[emptyIndex[i]] = worldArr[z];
+                    worldArr[z] = Actor.NONE;
+                    i++;
+                    if (i >= emptyIndex.length){
+                        break;
+                    }
+                }
+            }
+
+            world = toMatrix(worldArr);
+
+            plot(world);
+            plot(state);
+
         }
         toggle = !toggle;
     }
@@ -98,100 +136,93 @@ public class Simulation extends JPanel {
     }
 
     // ------- Write your method below this ---------------
-    <T>T[] toArray(T[][] matrix){
-        T[] array;
+    <T> T[] toArray(T[][] matrix, T[] array) {
 
-        for (int i = 0; i < matrix.length; i++){
-            for (int j = 0; j < matrix[0].length; j++){
-
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[0].length; j++) {
+                array[j + (i * matrix.length)] = matrix[i][j];
             }
         }
 
         return array;
     }
-    <T> T[] addTo(T[] array, T value){
-        T[] newArray;
-        newArray = new T[2];
 
-        return newArray;
-    }
-
-    boolean IsUn(int i, int j){
+    boolean IsUn(int i, int j) {
         int same = 0;
         int nsame = 8;
         if (i != 0 && j != 0) {//not bot left
-            if(world[i-1][j-1] == world[i][j]){
+            if (world[i - 1][j - 1] == world[i][j]) {
                 same++;
                 nsame--;
             }
-        }else{nsame--;}
-
-        if (i != 0 && j != world.length-1) {//not top left
-            if(world[i-1][j+1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (i != world.length-1 && j != world.length-1) {//not top right
-            if(world[i+1][j+1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (i != world.length-1 && j != 0) {//not bottom right
-            if(world[i+1][j-1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (i != 0) {//not left
-            if(world[i-1][j] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (j != world.length-1) {//not top
-            if(world[i][j+1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (i != world.length-1) {//not right
-            if(world[i+1][j] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-        if (j != 0) {//not bottom
-            if(world[i][j-1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-        }else{nsame--;}
-
-        if(threshold < same/nsame) {
-            return true;
+        } else {
+            nsame--;
         }
-        else{
+
+        if (i != 0 && j != world.length - 1) {//not top left
+            if (world[i - 1][j + 1] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (i != world.length - 1 && j != world.length - 1) {//not top right
+            if (world[i + 1][j + 1] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (i != world.length - 1 && j != 0) {//not bottom right
+            if (world[i + 1][j - 1] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (i != 0) {//not left
+            if (world[i - 1][j] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (j != world.length - 1) {//not top
+            if (world[i][j + 1] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (i != world.length - 1) {//not right
+            if (world[i + 1][j] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+        if (j != 0) {//not bottom
+            if (world[i][j - 1] == world[i][j]) {
+                same++;
+                nsame--;
+            }
+        } else {
+            nsame--;
+        }
+
+        if (threshold < same / nsame) {
+            return true;
+        } else {
             return false;
         }
     }
-
-/*             if(world[i][j+1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-            if(world[i+1][j+1] == world[i][j]){
-                same++;
-                nsame--;
-            }
-            if(world[i+1][j] == world[i][j]){
-                same++;
-                nsame--;
-            }
-
-          */
-
+    
     // --------- NOTHING to do below this --------------------------
     // --- Utility methods ----------------------------
     Actor[][] toMatrix(Actor[] arr) {
