@@ -38,9 +38,9 @@ public class Simulation extends JPanel {
     final Random rand = new Random();
     // %-distribution of RED, BLUE and NONE
     // Result (terminating?) is very depending on % empty and threshold, experiment!
-    final double[] distribution = {0.25, 0.25}; //First is red, second blue
+    final double[] distribution = {0.35, 0.35}; //First is red, second blue
     // % of surrounding neighbours that are like me
-    final int rows = 25;
+    final int rows = 30;
     final double threshold = 0.5; // 0.5 easier for testing;
     //  This is hard coded for testing purposes (later you should generate the world)
     Actor[][] world;
@@ -170,79 +170,61 @@ public class Simulation extends JPanel {
 
     boolean IsUn(int i, int j) {
         int same = 0;
-        int nsame = 8;
+        int nsame = 0;
         if (i != 0 && j != 0) {//not bot left
-            if (world[i - 1][j - 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j-1] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j-1] != Actor.NONE){
+                nsame++;}}
 
         if (i != 0 && j != world.length - 1) {//not top left
-            if (world[i - 1][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1 && j != world.length - 1) {//not top right
-            if (world[i + 1][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1 && j != 0) {//not bottom right
-            if (world[i + 1][j - 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j-1] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j-1] != Actor.NONE){
+                nsame++;}}
+
         if (i != 0) {//not left
-            if (world[i - 1][j] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i-1][j] == world[i][j]) {
+                same++;}
+            else if(world[i-1][j] != Actor.NONE){
+                nsame++;}}
+
         if (j != world.length - 1) {//not top
-            if (world[i][j + 1] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i][j+1] == world[i][j]) {
+                same++;}
+            else if(world[i][j+1] != Actor.NONE){
+                nsame++;}}
+
         if (i != world.length - 1) {//not right
-            if (world[i + 1][j] == world[i][j]) {
-                same++;
-                nsame--;
-            }
-        } else {
-            nsame--;
-        }
+            if (world[i+1][j] == world[i][j]) {
+                same++;}
+            else if(world[i+1][j] != Actor.NONE){
+                nsame++;}}
+
         if (j != 0) {//not bottom
             if (world[i][j - 1] == world[i][j]) {
                 same++;
-                nsame--;
+            } else if (world[i][j - 1] != Actor.NONE) {
+                nsame++;}}
+            double sum = (same+0.0)/(0.0+nsame+same);
+            if ((nsame+same) != 0 && threshold <= sum) {
+                return false;
+            } else {
+                return true;
             }
-        } else {
-            nsame--;
         }
-
-        if (threshold < same / nsame) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 
     // --------- NOTHING to do below this --------------------------
     // --- Utility methods ----------------------------
